@@ -1,0 +1,117 @@
+import java.util.Scanner;
+
+public class TrainReservation {
+
+    private static final int TOTAL_SEATS = 80;
+    private static final int SEATS_PER_ROW = 7;
+    private static final int TOTAL_ROWS = 12;
+
+    private static int[] seats = new int[TOTAL_SEATS];
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        initializePreBookedSeats();
+
+        System.out.println("Welcome to the Train Reservation System!");
+
+        while (true) {
+            displaySeats();
+
+            System.out.print("Enter the number of seats you want to reserve (or 0 to exit): ");
+            
+            // Checking if input is an integer
+            if (!scanner.hasNextInt()) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.next(); // Clear invalid input
+                continue;
+            }
+
+            int seatsToBook = scanner.nextInt();
+
+            if (seatsToBook == 0) {
+                System.out.println("Exiting the system. Thank you!");
+                break;
+            }
+
+            if (seatsToBook > 7) {
+                System.out.println("You can only book up to 7 seats at a time. Please try again.");
+                continue;
+            }
+
+            boolean success = reserveSeats(seatsToBook);
+
+            if (!success) {
+                System.out.println("Unable to book " + seatsToBook + " seats. Please try again with fewer seats.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static void initializePreBookedSeats() {
+        int[] preBookedSeats = {3, 5, 9, 15, 28, 42, 44, 60, 72};
+        for (int seat : preBookedSeats) {
+            seats[seat - 1] = 1;
+        }
+    }
+
+    private static boolean reserveSeats(int seatsToBook) {
+        for (int row = 0; row < TOTAL_ROWS; row++) {
+            int rowStartIndex = row * SEATS_PER_ROW;
+            int rowEndIndex = (row == TOTAL_ROWS - 1) ? rowStartIndex + 3 : rowStartIndex + SEATS_PER_ROW;
+
+            int availableSeatsInRow = 0;
+            for (int i = rowStartIndex; i < rowEndIndex; i++) {
+                if (seats[i] == 0) {
+                    availableSeatsInRow++;
+                    if (availableSeatsInRow == seatsToBook) {
+                        for (int j = i - seatsToBook + 1; j <= i; j++) {
+                            seats[j] = 1;
+                        }
+                        displayBookedSeats(i - seatsToBook + 1, i);
+                        return true;
+                    }
+                } else {
+                    availableSeatsInRow = 0;
+                }
+            }
+        }
+
+        int booked = 0;
+        for (int i = 0; i < TOTAL_SEATS; i++) {
+            if (seats[i] == 0) {
+                seats[i] = 1;
+                booked++;
+                if (booked == seatsToBook) {
+                    displayBookedSeats(i - seatsToBook + 1, i);
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static void displayBookedSeats(int start, int end) {
+        System.out.print("Successfully booked seats: ");
+        for (int i = start; i <= end; i++) {
+            System.out.print((i + 1) + " ");
+        }
+        System.out.println();
+    }
+
+    private static void displaySeats() {
+        System.out.println("\nCurrent seat availability:");
+
+        for (int row = 0; row < TOTAL_ROWS; row++) {
+            int rowStartIndex = row * SEATS_PER_ROW;
+            int rowEndIndex = (row == TOTAL_ROWS - 1) ? rowStartIndex + 3 : rowStartIndex + SEATS_PER_ROW;
+
+            for (int i = rowStartIndex; i < rowEndIndex; i++) {
+                System.out.print(seats[i] == 0 ? "0 " : "X ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+}
